@@ -5,6 +5,12 @@ export const create = async (req, res, next) => {
   if (!req.body.title || !req.body.content) {
     return next(errorHandler(400, "Please provide all required fields"));
   }
+
+  // Kiểm tra xem bài đăng với tiêu đề đã tồn tại chưa
+  const existingPost = await Post.findOne({ title: req.body.title });
+  if (existingPost) {
+    return next(errorHandler(400, "Title already exists"));
+  }
   const slug = req.body.title
     .split(" ")
     .join("-")
