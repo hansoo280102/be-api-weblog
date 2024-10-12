@@ -72,8 +72,7 @@ export const signin = async (req, res, next) => {
         id: validUser._id,
         role: validUser.role,
       },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      process.env.JWT_SECRET
     );
 
     const { password: pass, ...rest } = validUser._doc;
@@ -82,7 +81,7 @@ export const signin = async (req, res, next) => {
     res
       .status(200)
       .cookie("access_token", token, { httpOnly: true }) // Lưu token vào cookie với tùy chọn httpOnly
-      .json(rest); // Trả về JSON
+      .json(rest); // Trả về thông tin user mà không bao gồm password
   } catch (error) {
     next(error);
   }
@@ -94,7 +93,7 @@ export const google = async (req, res, next) => {
     const user = await User.findOne({ email });
     if (user) {
       const token = jwt.sign(
-        { id: user._id, role: user.admin },
+        { id: user._id, role: user.role },
         process.env.JWT_SECRET
       );
       const { password, ...rest } = user._doc;

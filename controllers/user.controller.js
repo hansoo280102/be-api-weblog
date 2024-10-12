@@ -40,6 +40,13 @@ export const updateUser = async (req, res, next) => {
     }
   }
 
+  if (req.body.role) {
+    const validRoles = ["user", "admin", "cencor"];
+    if (!validRoles.includes(req.body.role)) {
+      return next(errorHandler(400, "Invalid role!"));
+    }
+  }
+
   try {
     const updatedUser = await User.findOneAndUpdate(
       { _id: req.params.userId }, // Điều kiện tìm kiếm
@@ -49,6 +56,7 @@ export const updateUser = async (req, res, next) => {
           email: req.body.email,
           profilePicture: req.body.profilePicture,
           password: req.body.password,
+          role: req.body.role,
         },
       },
       { new: true }
