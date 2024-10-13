@@ -77,19 +77,43 @@ export const getMyPosts = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 9;
     const sortDirection = req.query.order === "asc" ? 1 : -1;
 
-    // Lấy bài viết của chính người dùng dựa trên userId từ token
-    const myPosts = await Post.find({ userId: req.user.id })
+    // Lấy userId từ query
+    const userId = req.query.userId; // Giả sử bạn sẽ gửi userId trong query
+
+    // Lấy các bài viết của userId
+    const posts = await Post.find({
+      ...(userId && { userId }), // Lọc theo userId được gửi từ client
+      ...(req.query.category && { category: req.query.category }),
+      ...(req.query.slug && { slug: req.query.slug }),
+      ...(req.query.postId && { _id: req.query.postId }),
+      ...(req.query.searchTerm && {
+        $or: [
+          { title: { $regex: req.query.searchTerm, $options: "i" } },
+          { content: { $regex: req.query.searchTerm, $options: "i" } },
+        ],
+      }),
+    })
       .sort({ updatedAt: sortDirection })
       .skip(startIndex)
       .limit(limit);
 
-    if (myPosts.length === 0) {
-      return res.status(200).json({ message: "There's no post" });
-    }
+    const totalPosts = await Post.countDocuments({
+      ...(userId && { userId }), // Tính tổng số bài viết của người dùng
+    });
 
-    const totalMyPosts = await Post.countDocuments({ userId: req.user.id });
+    const now = new Date();
+    const oneMonthAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate()
+    );
 
-    res.status(200).json({ myPosts, totalMyPosts });
+    const lastMonthPosts = await Post.countDocuments({
+      ...(userId && { userId }), // Đếm số bài viết của người dùng trong tháng vừa qua
+      createdAt: { $gte: oneMonthAgo },
+    });
+
+    res.status(200).json({ posts, totalPosts, lastMonthPosts });
   } catch (error) {
     next(error);
   }
