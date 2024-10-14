@@ -8,7 +8,10 @@ export const test = (req, res) => {
 
 export const updateUser = async (req, res, next) => {
   // Kiểm tra quyền
-  if (req.user.id !== req.params.userId) {
+  const isAdmin = req.user.role === "admin";
+  const isSelfUpdate = req.user.id === req.params.userId;
+
+  if (!isAdmin && !isSelfUpdate) {
     return next(errorHandler(403, "You are not allowed to update this user!"));
   }
 
@@ -40,6 +43,7 @@ export const updateUser = async (req, res, next) => {
     }
   }
 
+  // Kiểm tra role
   if (req.body.role) {
     const validRoles = ["user", "admin", "cencor"];
     if (!validRoles.includes(req.body.role)) {
@@ -62,6 +66,10 @@ export const updateUser = async (req, res, next) => {
       { new: true }
     );
 
+    if (!updatedUser) {
+      return next(errorHandler(404, "User not found!"));
+    }
+
     const { password, ...rest } = updatedUser._doc;
     res.status(200).json(rest);
   } catch (error) {
@@ -70,7 +78,7 @@ export const updateUser = async (req, res, next) => {
 };
 
 export const deleteUser = async (req, res, next) => {
-  if (req.user.id !== req.params.userId) {
+  if (!req.user.role === "admin" && req.user.id !== req.params.userId) {
     return next(errorHandler(403, "You are not allowed to delete this user!"));
   }
   try {
