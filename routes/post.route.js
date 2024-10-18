@@ -1,10 +1,13 @@
 import express from "express";
 import { verifyToken } from "../utils/verifyUser.js";
 import {
+  approvePost,
   create,
   deletePost,
   getMyPosts,
+  getPendingPosts,
   getPosts,
+  rejectPost,
   updatePost,
 } from "../controllers/post.controller.js";
 
@@ -19,5 +22,13 @@ router.get("/getmyposts", getMyPosts);
 router.delete("/deletepost/:postId/:userId", verifyToken, deletePost);
 
 router.put("/updatepost/:postId/:userId", verifyToken, updatePost);
+
+// Route để admin/censor phê duyệt bài viết
+router.put("/approve/:postId", verifyToken, approvePost);
+
+// Route để admin/censor từ chối bài viết
+router.put("/reject/:postId", verifyToken, rejectPost);
+
+router.get("/getpendingposts", verifyToken, getPendingPosts);
 
 export default router;

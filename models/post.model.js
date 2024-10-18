@@ -31,6 +31,11 @@ const postSchema = new mongoose.Schema(
       type: String,
       default: "uncategorized",
     },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending", // Bài viết của user sẽ ở trạng thái chờ phê duyệt
+    },
   },
   { timestamps: true }
 );

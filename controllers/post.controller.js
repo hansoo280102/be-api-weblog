@@ -17,10 +17,16 @@ export const create = async (req, res, next) => {
     .toLowerCase()
     .replace(/[^a-zA-Z0-9-]/g, "-");
 
+  const status =
+    req.user.role === "admin" || req.user.role === "censor"
+      ? "approved"
+      : "pending";
+
   const newPost = new Post({
     ...req.body,
     slug,
     userId: req.user.id,
+    status,
   });
   try {
     const savePost = await newPost.save();
@@ -35,7 +41,9 @@ export const getPosts = async (req, res, next) => {
     const startIndex = parseInt(req.query.startIndex) || 0;
     const limit = parseInt(req.query.limit) || 9;
     const sortDirection = req.query.order === "asc" ? 1 : -1;
+
     const posts = await Post.find({
+      status: "approved", // Chỉ lấy bài viết đã phê duyệt
       ...(req.query.userId &&
         req.user.role !== "admin" && { userId: req.query.userId }),
       ...(req.query.category && { category: req.query.category }),
@@ -52,7 +60,7 @@ export const getPosts = async (req, res, next) => {
       .skip(startIndex)
       .limit(limit);
 
-    const totalPosts = await Post.countDocuments();
+    const totalPosts = await Post.countDocuments({ status: "approved" });
 
     const now = new Date();
     const oneMonthAgo = new Date(
@@ -143,6 +151,52 @@ export const updatePost = async (req, res, next) => {
       { new: true }
     );
     res.status(200).json(updatedPost);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const approvePost = async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+
+    if (!post) {
+      return next(errorHandler(404, "Post not found"));
+    }
+
+    post.status = "approved";
+    await post.save();
+
+    res.status(200).json({ message: "Post has been approved" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const rejectPost = async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+
+    if (!post) {
+      return next(errorHandler(404, "Post not found"));
+    }
+
+    post.status = "rejected";
+    await post.save();
+
+    res.status(200).json({ message: "Post has been rejected" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPendingPosts = async (req, res, next) => {
+  try {
+    const posts = await Post.find({ status: "pending" }).sort({
+      updatedAt: -1,
+    });
+
+    res.status(200).json(posts);
   } catch (error) {
     next(error);
   }
