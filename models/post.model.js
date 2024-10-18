@@ -33,6 +33,10 @@ const postSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending", // Bài viết của user sẽ ở trạng thái chờ phê duyệt
     },
+    document: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );
