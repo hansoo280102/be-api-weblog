@@ -5,6 +5,7 @@ import {
   create,
   deletePost,
   getMyPosts,
+  getPendingPostById,
   getPendingPosts,
   getPosts,
   rejectPost,
@@ -30,5 +31,7 @@ router.put("/approve/:postId", verifyToken, approvePost);
 router.put("/reject/:postId", verifyToken, rejectPost);
 
 router.get("/getpendingposts", verifyToken, getPendingPosts);
+
+router.get("/pending/:postId", getPendingPostById);
 
 export default router;

@@ -201,3 +201,20 @@ export const getPendingPosts = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getPendingPostById = async (req, res, next) => {
+  try {
+    const post = await Post.findOne({
+      _id: req.params.postId,
+      status: "pending", // Kiểm tra trạng thái là "pending"
+    });
+
+    if (!post) {
+      return next(errorHandler(404, "Pending post not found")); // Nếu không tìm thấy bài viết
+    }
+
+    res.status(200).json(post); // Trả về bài viết tìm thấy
+  } catch (error) {
+    next(error); // Xử lý lỗi
+  }
+};
