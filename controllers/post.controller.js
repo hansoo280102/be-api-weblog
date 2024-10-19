@@ -42,8 +42,58 @@ export const getPosts = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 9;
     const sortDirection = req.query.order === "asc" ? 1 : -1;
 
+    const now = new Date();
+    let timeFilter = {};
+
+    if (req.query.timePeriod) {
+      const timePeriod = req.query.timePeriod;
+
+      if (timePeriod === "today") {
+        const today = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        timeFilter = { createdAt: { $gte: today } };
+      } else if (timePeriod === "yesterday") {
+        const yesterdayStart = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 1
+        );
+        const yesterdayEnd = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        timeFilter = { createdAt: { $gte: yesterdayStart, $lt: yesterdayEnd } };
+      } else if (timePeriod === "last7days") {
+        const last7Days = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 7
+        );
+        timeFilter = { createdAt: { $gte: last7Days } };
+      } else if (timePeriod === "last30days") {
+        const last30Days = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 30
+        );
+        timeFilter = { createdAt: { $gte: last30Days } };
+      } else if (timePeriod === "last90days") {
+        const last90Days = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 90
+        );
+        timeFilter = { createdAt: { $gte: last90Days } };
+      }
+    }
+
     const posts = await Post.find({
-      status: "approved", // Chỉ lấy bài viết đã phê duyệt
+      status: "approved",
+      ...timeFilter,
       ...(req.query.userId &&
         req.user.role !== "admin" && { userId: req.query.userId }),
       ...(req.query.category && { category: req.query.category }),
@@ -60,20 +110,12 @@ export const getPosts = async (req, res, next) => {
       .skip(startIndex)
       .limit(limit);
 
-    const totalPosts = await Post.countDocuments({ status: "approved" });
-
-    const now = new Date();
-    const oneMonthAgo = new Date(
-      now.getFullYear(),
-      now.getMonth() - 1,
-      now.getDate()
-    );
-
-    const lastMonthPosts = await Post.countDocuments({
-      createdAt: { $gte: oneMonthAgo },
+    const totalPosts = await Post.countDocuments({
+      status: "approved",
+      ...timeFilter,
     });
 
-    res.status(200).json({ posts, totalPosts, lastMonthPosts });
+    res.status(200).json({ posts, totalPosts });
   } catch (error) {
     next(error);
   }
