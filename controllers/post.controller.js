@@ -1,5 +1,6 @@
 import Post from "../models/post.model.js";
 import { errorHandler } from "../utils/error.js";
+import Comment from "../models/comment.model.js";
 
 export const create = async (req, res, next) => {
   if (!req.body.title || !req.body.content) {
@@ -171,8 +172,13 @@ export const getMyPosts = async (req, res, next) => {
 
 export const deletePost = async (req, res, next) => {
   try {
+    // Xóa tất cả các comment có postId trùng với postId của bài viết
+    await Comment.deleteMany({ postId: req.params.postId });
+
+    // Sau đó xóa bài viết
     await Post.findByIdAndDelete(req.params.postId);
-    res.status(200).json("The post has been deleted");
+
+    res.status(200).json("The post and its comments have been deleted");
   } catch (error) {
     next(error);
   }
