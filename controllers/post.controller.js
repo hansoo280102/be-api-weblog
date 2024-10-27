@@ -326,3 +326,16 @@ export const bookmarkPost = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getBookmarkedPosts = async (req, res, next) => {
+  const userId = req.user.id; // Get the user ID from the token
+
+  try {
+    // Fetch posts where the bookmarks array contains the userId
+    const bookmarkedPosts = await Post.find({ bookmarks: userId });
+
+    res.status(200).json(bookmarkedPosts);
+  } catch (error) {
+    next(error); // Handle errors
+  }
+};

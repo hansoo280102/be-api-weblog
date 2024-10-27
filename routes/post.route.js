@@ -5,6 +5,7 @@ import {
   bookmarkPost,
   create,
   deletePost,
+  getBookmarkedPosts,
   getMyPosts,
   getPendingPostById,
   getPendingPosts,
@@ -39,5 +40,7 @@ router.get("/pending/:postId", getPendingPostById);
 router.put("/like/:postId", verifyToken, likePost);
 
 router.put("/bookmark/:postId", verifyToken, bookmarkPost);
+
+router.get("/getbookmarkedposts", verifyToken, getBookmarkedPosts);
 
 export default router;
