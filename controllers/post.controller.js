@@ -266,3 +266,63 @@ export const getPendingPostById = async (req, res, next) => {
     next(error); // Xử lý lỗi
   }
 };
+
+export const likePost = async (req, res, next) => {
+  const { postId } = req.params;
+  const userId = req.user.id; // Lấy ID người dùng từ token
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return next(errorHandler(404, "post not found"));
+    }
+
+    const hasLiked = post.likes.includes(userId);
+
+    if (hasLiked) {
+      post.likes = post.likes.filter((id) => id !== userId);
+      post.numberOfLikes -= 1;
+    } else {
+      post.likes.push(userId);
+      post.numberOfLikes += 1;
+    }
+
+    await post.save();
+    res.status(200).json({
+      message: hasLiked ? "Unliked post" : "liked post",
+      numberOfLikes: post.numberOfLikes,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const bookmarkPost = async (req, res, next) => {
+  const { postId } = req.params;
+  const userId = req.user.id; // Lấy ID người dùng từ token
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return next(errorHandler(404, "post not found"));
+    }
+
+    const hasBookmarked = post.bookmarks.includes(userId);
+
+    if (hasBookmarked) {
+      post.bookmarks = post.bookmarks.filter((id) => id !== userId);
+    } else {
+      post.bookmarks.push(userId);
+    }
+
+    await post.save();
+    res.status(200).json({
+      message: hasBookmarked ? "unbookmark" : "bookmarked",
+      bookmarked: !hasBookmarked,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -2,12 +2,14 @@ import express from "express";
 import { verifyToken } from "../utils/verifyUser.js";
 import {
   approvePost,
+  bookmarkPost,
   create,
   deletePost,
   getMyPosts,
   getPendingPostById,
   getPendingPosts,
   getPosts,
+  likePost,
   rejectPost,
   updatePost,
 } from "../controllers/post.controller.js";
@@ -33,5 +35,9 @@ router.put("/reject/:postId", verifyToken, rejectPost);
 router.get("/getpendingposts", verifyToken, getPendingPosts);
 
 router.get("/pending/:postId", getPendingPostById);
+
+router.put("/like/:postId", verifyToken, likePost);
+
+router.put("/bookmark/:postId", verifyToken, bookmarkPost);
 
 export default router;
