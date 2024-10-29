@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.route.js";
 import cookieParser from "cookie-parser";
 import postRoutes from "./routes/post.route.js";
 import commentRoutes from "./routes/comment.route.js";
+import replyCommentRoutes from "./routes/replyComment.route.js";
 
 dotenv.config(); // Load environment variables
 
@@ -31,6 +32,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/comment", commentRoutes);
+app.use("/api/replyComment", replyCommentRoutes);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
