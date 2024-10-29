@@ -37,15 +37,20 @@ export const create = async (req, res, next) => {
     next(error);
   }
 };
+
 export const getPosts = async (req, res, next) => {
   try {
     const startIndex = parseInt(req.query.startIndex) || 0;
     const limit = parseInt(req.query.limit) || 9;
-    const sortDirection = req.query.order === "asc" ? 1 : -1;
+
+    // Xác định trường sắp xếp và hướng sắp xếp
+    const sortBy = req.query.sortBy === "likes" ? "numberOfLikes" : "createdAt"; // Sắp xếp theo lượt thích nếu `sortBy` là "likes"
+    const sortDirection = req.query.sort === "asc" ? 1 : -1; // Sắp xếp tăng dần hoặc giảm dần
 
     const now = new Date();
     let timeFilter = {};
 
+    // Áp dụng bộ lọc thời gian dựa trên `timePeriod`
     if (req.query.timePeriod) {
       const timePeriod = req.query.timePeriod;
 
@@ -92,6 +97,7 @@ export const getPosts = async (req, res, next) => {
       }
     }
 
+    // Lấy danh sách bài viết dựa trên bộ lọc và sắp xếp
     const posts = await Post.find({
       status: "approved",
       ...timeFilter,
@@ -107,7 +113,7 @@ export const getPosts = async (req, res, next) => {
         ],
       }),
     })
-      .sort({ updatedAt: sortDirection })
+      .sort({ [sortBy]: sortDirection }) // Sắp xếp theo trường và hướng đã chọn
       .skip(startIndex)
       .limit(limit);
 
