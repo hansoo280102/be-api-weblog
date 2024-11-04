@@ -200,6 +200,7 @@ export const updatePost = async (req, res, next) => {
           content: req.body.content,
           category: req.body.category,
           image: req.body.image,
+          document: req.body.document,
         },
       },
       { new: true }
